@@ -5,34 +5,31 @@ Backend приложение на FastAPI для менеджмента зада
 ## Установка
 
 ```bash
-git clone https://gitlab.com/orrond/task_manager.git
-cd task_manager
+git git remote add origin https://gitlab.com/orrond/resume_improver.git
+cd resume_improver
 ```
 
 ## Использование
 
-Пример запуска программы:
+### Пример запуска программы:
 
-### Docker-Compose: 
-
-запустить докер и ввести в терминале команду:
+Указать в .env и .test.env файлах DB_HOST=localhost и выполнить команды:
 
 ```bash
-docker compose up
-```
-
-### Напрямую: 
-поменять данные в .env и .test.env для подключения к postgresql, применить миграции и запустить проект
-```bash
-cd task_manager
 pip install -r requirements.txt
-alembic upgrade head
-pytest # для запуска тестов
+pytest 
 python main.py
 ```
+Swagger приложения будет доступен по адресу http://localhost:8000/docs#/
+
+Можно также запустить приложение через docker compose. Для этого надо указать в .env и .test.env файлах DB_HOST=pg, запустить Docker Desktop и выполнить команды: 
+
+```bash
+docker compose pull
+docker compose up
+```
+Swagger приложения будет доступен по адресу http://localhost:8000/docs#/  
+Также можно зайти в pgadmin по адресу http://localhost:5050/
 
 ## TO-DO
-1. ~~Добавить lifespan~~
-2. ~~Написать интеграционные тесты~~
-3. Переделать тесты с pytest на gauge
-4. Устроиться на работу
+Устроиться на работу
