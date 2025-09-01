@@ -1,0 +1,79 @@
+services:
+
+  backend:
+
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+
+    depends_on:
+      pg:
+        condition: service_healthy
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 5s
+      timeout: 3s
+      retries: 2
+
+    volumes:
+      - ./:/app
+
+    command: [ "bash", "/app/entrypoint.sh" ]
+
+    develop:
+      watch:
+        - action: rebuild
+          path: ./requirements.txt
+        - action: sync+restart
+          path: ./
+          target: /app
+
+    ports:
+      - "8000:8000"
+
+  pg:
+
+    image: postgres:16
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      PG_DATA: /var/lib/postgresql/data
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+
+    image: dpage/pgadmin4
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+
+    volumes:
+      - ./backups:/backups
+
+    ports:
+      - "5050:80"
+
+    depends_on:
+      pg:
+        condition: service_healthy
+
+volumes:
+  pgdata:
