@@ -4,7 +4,7 @@ services:
 
     build:
       dockerfile: ./Dockerfile
-      context: ./
+      context: ./fastapi_application
 
     depends_on:
       pg:
@@ -17,20 +17,46 @@ services:
       retries: 2
 
     volumes:
-      - ./:/app
+      - ./fastapi_application/:/app
 
     command: [ "bash", "/app/entrypoint.sh" ]
+
+#    develop:
+#      watch:
+#        - action: rebuild
+#          path: ./fastapi_application/requirements.txt
+#        - action: sync+restart
+#          path: ./fastapi_application/
+#          target: /app
+
+    ports:
+      - "8000:8000"
+
+  frontend:
+
+    build:
+      dockerfile: ./Dockerfile
+      context: ./frontend/
+#
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    volumes:
+      - ./frontend/:/app
 
     develop:
       watch:
         - action: rebuild
-          path: ./requirements.txt
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
         - action: sync+restart
-          path: ./
+          path: ./frontend/
           target: /app
 
     ports:
-      - "8000:8000"
+      - "3000:3000"
 
   pg:
 

@@ -1,0 +1,8 @@
+backend
+__pycache__
+.pytest_cache
+.idea
+.git
+README.md
+.gitignore
+.gitattributes

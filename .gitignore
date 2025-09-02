@@ -1,5 +1,9 @@
-.pytest_cache
+fastapi_application/.pytest_cache
 .git
 .idea
+fastapi_application/__pycache__
+fastapi_application/backend
+.pytest_cache
 __pycache__
-backend
+frontend/.gitignore
+frontend/.dockerignore
