@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: backend
+    runtime: docker
+    dockerfilePath: ./fastapi_application/Dockerfile
+    envVars:
+      - key: DB_HOST
+        fromService:
+          name: pg
+          type: postgres
+          property: host
+      - key: DB_PORT
+        fromService:
+          name: pg
+          type: postgres
+          property: port
+      - key: DB_NAME
+        fromService:
+          name: pg
+          type: postgres
+          property: database
+      - key: DB_USER
+        fromService:
+          name: pg
+          type: postgres
+          property: user
+      - key: DB_PASS
+        fromService:
+          name: pg
+          type: postgres
+          property: password
+    ports:
+      - port: 8000
+        protocol: TCP
+
+  - type: web
+    name: frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://your-backend-url.onrender.com
+    ports:
+      - port: 3000
+        protocol: TCP
+
+  - type: pserv
+    name: pg
+    runtime: postgres
+    version: "16"
+    diskSize: 1
