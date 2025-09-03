@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { resumeService } from '../../services/resumeService';
-import { ResumeResponse } from '../../types/resume';
+import { historyService } from '../../services/historyService';
+import { ResumeResponse, ResumeHistory } from '../../types/resume';
 import { ApiError } from '../../types/api';
 import styles from '../../styles/resume.module.css';
 import { BackButton } from '../../components/BackButton';
@@ -10,13 +11,17 @@ export const ResumeDetail = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [resume, setResume] = useState<ResumeResponse | null>(null);
+    const [history, setHistory] = useState<ResumeHistory[]>([]);
     const [loading, setLoading] = useState(true);
+    const [historyLoading, setHistoryLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [improving, setImproving] = useState(false); // ← Добавлено состояние
+    const [improving, setImproving] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
 
     useEffect(() => {
         if (id) {
             loadResume();
+            loadHistory();
         }
     }, [id]);
 
@@ -33,23 +38,56 @@ export const ResumeDetail = () => {
         }
     };
 
-    const handleImprove = async (id: number) => {
-        setImproving(true); // ← Используем состояние
+    const loadHistory = async () => {
+        if (!id) return;
+
         try {
-            const improvedResume = await resumeService.improveResume(id);
+            setHistoryLoading(true);
+            const historyData = await historyService.getResumeHistory(Number(id));
+            setHistory(historyData);
+        } catch (err) {
+            console.error('Ошибка загрузки истории:', err);
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    const handleImprove = async () => {
+        if (!resume) return;
+
+        setImproving(true);
+        try {
+            const improvedResume = await resumeService.improveResume(resume.id);
             setResume(improvedResume);
+            // Перезагружаем историю после улучшения
+            await loadHistory();
         } catch (err) {
             const apiError = err as ApiError;
             setError(apiError.message || 'Ошибка улучшения резюме');
         } finally {
-            setImproving(false); // ← Сбрасываем состояние
+            setImproving(false);
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm('Удалить это резюме?')) {
+    const handleDeleteHistory = async () => {
+        if (!resume || !window.confirm('Удалить всю историю изменений этого резюме?')) return;
+
+        try {
+            await historyService.deleteResumeHistory(resume.id);
+            setHistory([]);
+            alert('История изменений удалена');
+        } catch (err) {
+            const apiError = err as ApiError;
+            setError(apiError.message || 'Ошибка удаления истории');
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!resume) return;
+
+        if (window.confirm('Вы уверены, что хотите удалить это резюме?')) {
             try {
-                await resumeService.deleteResume(id);
+                await resumeService.deleteResume(resume.id);
                 navigate('/resumes');
             } catch (err) {
                 const apiError = err as ApiError;
@@ -108,8 +146,8 @@ export const ResumeDetail = () => {
                     <h1 className={styles.pageTitle}>{resume.title}</h1>
                     <div className={styles.actionButtons}>
                         <button
-                            onClick={() => handleImprove(resume.id)}
-                            disabled={improving} // ← Теперь improving существует
+                            onClick={handleImprove}
+                            disabled={improving}
                             className={`${styles.btn} ${styles.btnWarning}`}
                         >
                             {improving ? 'Улучшение...' : '✨ Улучшить'}
@@ -121,7 +159,13 @@ export const ResumeDetail = () => {
                             ✏️ Редактировать
                         </button>
                         <button
-                            onClick={() => handleDelete(resume.id)}
+                            onClick={() => setShowHistory(!showHistory)}
+                            className={`${styles.btn} ${styles.btnInfo}`}
+                        >
+                            {showHistory ? '📋 Скрыть историю' : '📋 История изменений'}
+                        </button>
+                        <button
+                            onClick={handleDelete}
                             className={`${styles.btn} ${styles.btnDanger}`}
                         >
                             🗑️ Удалить
@@ -137,12 +181,73 @@ export const ResumeDetail = () => {
                             <span className={styles.fieldValue}>{resume.title}</span>
                         </div>
                         <div className={styles.resumeField}>
-                            <span className={styles.fieldLabel}>Содержание:</span>
+                            <span className={styles.fieldLabel}>Текущая версия:</span>
                             <div className={styles.contentBox}>
                                 {resume.content || 'Нет содержания'}
                             </div>
                         </div>
                     </div>
+
+                    {showHistory && (
+                        <div className={styles.resumeSection}>
+                            <div className={styles.sectionHeader}>
+                                <h3 className={styles.sectionTitle}>
+                                    История изменений ({history.length})
+                                </h3>
+                                {history.length > 0 && (
+                                    <button
+                                        onClick={handleDeleteHistory}
+                                        className={`${styles.btn} ${styles.btnDanger} ${styles.btnCompact}`}
+                                        title="Удалить всю историю"
+                                    >
+                                        🗑️ Очистить историю
+                                    </button>
+                                )}
+                            </div>
+
+                            {historyLoading ? (
+                                <div className={styles.loading}>Загрузка истории...</div>
+                            ) : history.length === 0 ? (
+                                <div className={styles.emptyState}>
+                                    <p>История изменений отсутствует</p>
+                                </div>
+                            ) : (
+                                <div className={styles.historyList}>
+                                    {history.map((item, index) => (
+                                        <div key={item.id} className={styles.historyItem}>
+                                            <div className={styles.historyHeader}>
+                                                <span className={styles.historyDate}>
+                                                    Версия {history.length - index} •{' '}
+                                                    {new Date(item.improved_at).toLocaleDateString('ru-RU', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <div className={styles.historyContent}>
+                                                <div className={styles.historyVersion}>
+                                                    <h4>Было:</h4>
+                                                    <div className={styles.versionContent}>
+                                                        {item.old_content}
+                                                    </div>
+                                                </div>
+                                                <div className={styles.historyArrow}>→</div>
+                                                <div className={styles.historyVersion}>
+                                                    <h4>Стало:</h4>
+                                                    <div className={styles.versionContent}>
+                                                        {item.new_content}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

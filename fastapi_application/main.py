@@ -3,6 +3,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from api.resume import router as resume_router
+from api.history import router as history_router
 from auth.user_manager import auth_manager
 from database.database import db
 
@@ -41,6 +42,9 @@ app.add_middleware(
 )
 
 app.include_router(resume_router)
+
+app.include_router(history_router)
+
 app.include_router(
     auth_manager.get_register_router(),
     prefix="/auth",

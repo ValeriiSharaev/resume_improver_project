@@ -67,9 +67,10 @@ export const Login = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="btn btn-primary btn-full"
+                        className="auth-btn btn-primary"
                     >
-                        {loading ? 'Вход...' : 'Войти'}
+                        <span className="btn-icon">🚀</span>
+                        {loading ? 'Вход...' : 'Войти в аккаунт'}
                     </button>
                 </form>
 

@@ -24,7 +24,7 @@ async def get_resume(
         resume_id: int,
         active_user: User = Depends(current_active_user),
         session: AsyncSession = Depends(db.get_session)
-):
+) -> ResumeRead:
     resume = await ResumeRepository.get(active_user.id, resume_id, session)
     return resume
 

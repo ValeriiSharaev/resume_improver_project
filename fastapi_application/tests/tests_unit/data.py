@@ -158,3 +158,87 @@ IMPROVE_RESUME_TEST_DATA = [
         404
     ),
 ]
+
+TEST_HISTORIES_INDEXES = [
+    0,
+    1,
+    0
+]
+
+TEST_HISTORIES_DATA = [
+    {
+        "old_content": TEST_RESUMES[0]["content"],
+        "new_content": TEST_RESUMES[0]["content"] + "\n[improved]"
+
+    },
+    {
+        "old_content": TEST_RESUMES[1]["content"],
+        "new_content": TEST_RESUMES[1]["content"] + "\n[improved]"
+    }
+]
+
+GET_RESUME_HISTORY_DATA = [
+    (
+        0,
+        [
+            TEST_HISTORIES_DATA[0],
+            {
+                "old_content": TEST_RESUMES[0]["content"] + "\n[improved]",
+                "new_content": TEST_RESUMES[0]["content"] + "\n[improved]\n[improved]"
+            },
+        ],
+        200
+    ),
+    (
+        1,
+        [TEST_HISTORIES_DATA[1]],
+        200
+    ),
+    (
+        2,
+        TEST_HISTORIES_DATA[0],
+        404
+    )
+]
+
+GET_USER_HISTORY_TEST_DATA = [
+    (
+        [
+            TEST_HISTORIES_DATA[0],
+            TEST_HISTORIES_DATA[1],
+            {
+                "old_content": TEST_RESUMES[0]["content"] + "\n[improved]",
+                "new_content": TEST_RESUMES[0]["content"] + "\n[improved]\n[improved]"
+            },
+        ],
+        3,
+        200
+    ),
+]
+
+DELETE_RESUME_HISTORY_DATA = [
+    (
+        0,
+        [
+            TEST_HISTORIES_DATA[0],
+            {
+                "old_content": TEST_RESUMES[0]["content"] + "\n[improved]",
+                "new_content": TEST_RESUMES[0]["content"] + "\n[improved]\n[improved]"
+            },
+        ],
+        200,
+        1
+    ),
+    (
+        2,
+        [TEST_HISTORIES_DATA[0]],
+        404,
+        3
+    ),
+    (
+        1,
+        [TEST_HISTORIES_DATA[1]],
+        200,
+        2
+    ),
+]

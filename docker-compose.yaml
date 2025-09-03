@@ -37,23 +37,27 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: ./frontend/
-#
+
     depends_on:
-      backend:
+      pg:
         condition: service_healthy
 
     volumes:
       - ./frontend/:/app
 
-    develop:
-      watch:
-        - action: rebuild
-          path: ./frontend/package.json
-        - action: rebuild
-          path: ./frontend/package-lock.json
-        - action: sync+restart
-          path: ./frontend/
-          target: /app
+#    develop:
+#      watch:
+#        - action: rebuild
+#          path: ./frontend/package.json
+#        - action: rebuild
+#          path: ./frontend/package-lock.json
+#        - action: sync+restart
+#          path: ./frontend/
+#          target: /app
+
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Для горячей перезагрузки в Docker
+      - WDS_SOCKET_HOST=0.0.0.0
 
     ports:
       - "3000:3000"

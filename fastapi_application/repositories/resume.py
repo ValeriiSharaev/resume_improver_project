@@ -2,7 +2,9 @@ from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Resume
+from repositories.history import HistoryRepository
 from repositories.validator import Validator
+from schemas.history import HistoryCreate
 from schemas.resume import ResumeRead, ResumeCreate, ResumeUpdate
 
 
@@ -74,6 +76,7 @@ class ResumeRepository:
         resume = await session.get(Resume, resume_id)
         Validator.check_existence(resume)
         Validator.check_access_rights(resume.user_id, user_id)
+        await HistoryRepository.delete_all_by_resume(resume_id, user_id, session)
         await session.delete(resume)
         await session.commit()
         return ResumeRead.model_validate(resume)
@@ -88,7 +91,15 @@ class ResumeRepository:
         resume = await session.get(Resume, resume_id)
         Validator.check_existence(resume)
         Validator.check_access_rights(resume.user_id, user_id)
+        old_content = resume.content
         resume.content = resume.content + "\n[improved]"
         await session.commit()
         await session.refresh(resume)
+        new_content = resume.content
+        history_data = HistoryCreate(
+            resume_id=resume_id,
+            old_content=old_content,
+            new_content=new_content
+        )
+        await HistoryRepository.add(history_data, session)
         return ResumeRead.model_validate(resume)

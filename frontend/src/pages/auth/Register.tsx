@@ -71,9 +71,10 @@ export const Register = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="btn btn-primary btn-full"
+                        className="auth-btn btn-secondary"
                     >
-                        {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+                        <span className="btn-icon">✨</span>
+                        {loading ? 'Регистрация...' : 'Создать аккаунт'}
                     </button>
                 </form>
 
