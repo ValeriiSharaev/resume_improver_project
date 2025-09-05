@@ -106,4 +106,4 @@ class HttpClient {
     }
 }
 
-export const httpClient = new HttpClient(import.meta.env.VITE_BACKEND_BASE_URL);
+export const httpClient = new HttpClient(process.env.REACT_APP_BACKEND_BASE_URL);

@@ -20,6 +20,6 @@ services:
     ports:
       - 3000
     environment:
-      - VITE_BACKEND_BASE_URL=${BACKEND_URL}
+      REACT_APP_BACKEND_BASE_URL=http://backend:8000
     depends_on:
       - backend
