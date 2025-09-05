@@ -106,4 +106,4 @@ class HttpClient {
     }
 }
 
-export const httpClient = new HttpClient('http://localhost:8000');
+export const httpClient = new HttpClient(import.meta.env.VITE_BACKEND_BASE_URL);

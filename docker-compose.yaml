@@ -1,109 +1,20 @@
 services:
-
   backend:
-
-    build:
-      dockerfile: ./Dockerfile
-      context: ./fastapi_application
-
-    depends_on:
-      pg:
-        condition: service_healthy
-
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
-      interval: 5s
-      timeout: 3s
-      retries: 2
-
-    volumes:
-      - ./fastapi_application/:/app
-
-    command: [ "bash", "/app/entrypoint.sh" ]
-
-#    develop:
-#      watch:
-#        - action: rebuild
-#          path: ./fastapi_application/requirements.txt
-#        - action: sync+restart
-#          path: ./fastapi_application/
-#          target: /app
-
+    build: ./fastapi_application
     ports:
-      - "8000:8000"
+      - 8000
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
 
   frontend:
-
-    build:
-      dockerfile: ./Dockerfile
-      context: ./frontend/
-
+    build: ./frontend
+    ports:
+      - 3000
+    environment:
+      - VITE_BACKEND_BASE_URL=${BACKEND_URL}
     depends_on:
-      pg:
-        condition: service_healthy
-
-    volumes:
-      - ./frontend/:/app
-
-#    develop:
-#      watch:
-#        - action: rebuild
-#          path: ./frontend/package.json
-#        - action: rebuild
-#          path: ./frontend/package-lock.json
-#        - action: sync+restart
-#          path: ./frontend/
-#          target: /app
-
-    environment:
-      - CHOKIDAR_USEPOLLING=true  # Для горячей перезагрузки в Docker
-      - WDS_SOCKET_HOST=0.0.0.0
-
-    ports:
-      - "3000:3000"
-
-  pg:
-
-    image: postgres:16
-
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      PG_DATA: /var/lib/postgresql/data
-
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-    ports:
-      - "5432:5432"
-
-  pgadmin:
-
-    image: dpage/pgadmin4
-
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-
-    volumes:
-      - ./backups:/backups
-
-    ports:
-      - "5050:80"
-
-    depends_on:
-      pg:
-        condition: service_healthy
-
-volumes:
-  pgdata:
+      - backend

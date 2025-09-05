@@ -9,8 +9,9 @@ class Settings(BaseSettings):
     DB_PORT: str
     MODE: str
     SECRET_KEY_MANAGER: str
+    FRONTEND_URL: str
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict()
 
     @property
     def DATABASE_URL(self):

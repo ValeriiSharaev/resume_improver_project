@@ -6,6 +6,7 @@ from api.resume import router as resume_router
 from api.history import router as history_router
 from auth.user_manager import auth_manager
 from database.database import db
+from config import settings
 
 
 @asynccontextmanager
@@ -31,7 +32,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = ["http://localhost:3000"]
+origins = [
+    "http://localhost:3000",
+    settings.FRONTEND_URL
+]
 
 app.add_middleware(
     CORSMiddleware,
