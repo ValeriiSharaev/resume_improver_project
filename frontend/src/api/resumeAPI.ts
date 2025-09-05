@@ -8,8 +8,8 @@ import { ApiResponse } from '../types/api';
 
 export class ResumeApi {
     async getAllResumes(): Promise<ApiResponse<ResumeResponse[]>> {
-        return httpClient.get<ResumeResponse[]>('/resumes', {
-            requiresAuth: true // Явно указываем авторизацию
+        return httpClient.get<ResumeResponse[]>('/resumes/', {
+            requiresAuth: true
         });
     }
 
@@ -20,7 +20,7 @@ export class ResumeApi {
     }
 
     async createResume(resumeData: CreateResumeRequest): Promise<ApiResponse<ResumeResponse>> {
-        return httpClient.post<ResumeResponse>('/resumes', resumeData, {
+        return httpClient.post<ResumeResponse>('/resumes/', resumeData, {
             headers: { 'Content-Type': 'application/json' },
             requiresAuth: true
         });
