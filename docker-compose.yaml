@@ -1,14 +1,19 @@
+version: '3.8'
+
 services:
   backend:
     build: ./fastapi_application
     ports:
       - 8000
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=5432
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
+      - DB_HOST=${PGHOST}
+      - DB_PORT=${PGPORT}
+      - DB_NAME=${PGDATABASE}
+      - DB_USER=${PGUSER}
+      - DB_PASS=${PGPASSWORD}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - SECRET_KEY_MANAGER=${SECRET_KEY_MANAGER}
+      - MODE=PROD
 
   frontend:
     build: ./frontend
