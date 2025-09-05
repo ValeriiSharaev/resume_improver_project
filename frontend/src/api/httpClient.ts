@@ -106,4 +106,8 @@ class HttpClient {
     }
 }
 
-export const httpClient = new HttpClient(process.env.REACT_APP_BACKEND_BASE_URL);
+const backendUrl = process.env.REACT_APP_BACKEND_BASE_URL;
+if (!backendUrl) {
+    throw new Error('REACT_APP_BACKEND_BASE_URL environment variable is not defined');
+}
+export const httpClient = new HttpClient(backendUrl);
